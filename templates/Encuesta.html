@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Encuesta - SPORTPRO{% endblock %}
+
+{% block menu_rutinas_active %}{% endblock %}
+
+{% block content %}
+
+<h2 class="screen-title">Encuesta de inicio</h2>
+<p class="screen-subtitle">“Tu entrenamiento, tu progreso, tu mejor versión.”</p>
+
+<div class="form-card">
+  <form id="encuestaForm" method="post">
+    <!-- Usuario -->
+    <div class="form-group">
+      <label class="form-label">Nombre de usuario</label>
+      <input type="text" name="usuario" class="form-input" required>
+    </div>
+
+    <!-- Contraseña -->
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input type="password" name="contrasena" class="form-input" required>
+    </div>
+
+    <!-- Género -->
+    <div class="form-group">
+      <label class="form-label">Género</label>
+      <div class="radio-group">
+        <label><input type="radio" name="genero" value="Masculino" required> Masculino</label>
+        <label><input type="radio" name="genero" value="Femenino"> Femenino</label>
+        <label><input type="radio" name="genero" value="Otro"> Otro</label>
+      </div>
+    </div>
+
+    <!-- Deporte de interés -->
+    <div class="form-group">
+      <label class="form-label">Deporte de interés</label>
+      <div class="radio-group">
+        <label><input type="radio" name="deporte" value="Futbol" required> Fútbol</label>
+        <label><input type="radio" name="deporte" value="Baloncesto"> Baloncesto</label>
+        <label><input type="radio" name="deporte" value="Natacion"> Natación</label>
+        <label><input type="radio" name="deporte" value="Tenis"> Tenis</label>
+      </div>
+    </div>
+
+    <!-- Edad -->
+    <div class="form-group">
+      <label class="form-label">Edad</label>
+      <input type="number" name="edad" class="form-input" min="10" max="100" required>
+    </div>
+
+    <!-- Frecuencia de entrenamiento -->
+    <div class="form-group">
+      <label class="form-label">Frecuencia de entrenamiento</label>
+      <div class="radio-group">
+        <label><input type="radio" name="frecuencia" value="a" required> &lt;1 vez/semana</label>
+        <label><input type="radio" name="frecuencia" value="b"> 1–2 veces/semana</label>
+        <label><input type="radio" name="frecuencia" value="c"> 3–4 veces/semana</label>
+        <label><input type="radio" name="frecuencia" value="d"> 5+ veces/semana</label>
+      </div>
+    </div>
+
+    <!-- Duración de las sesiones -->
+    <div class="form-group">
+      <label class="form-label">Duración de las sesiones</label>
+      <div class="radio-group">
+        <label><input type="radio" name="duracion" value="a" required> &lt;20 min</label>
+        <label><input type="radio" name="duracion" value="b"> 20–40 min</label>
+        <label><input type="radio" name="duracion" value="c"> 40–60 min</label>
+        <label><input type="radio" name="duracion" value="d"> &gt;60 min</label>
+      </div>
+    </div>
+
+    <!-- Experiencia -->
+    <div class="form-group">
+      <label class="form-label">Experiencia en el deporte</label>
+      <div class="radio-group">
+        <label><input type="radio" name="experiencia" value="a" required> Principiante</label>
+        <label><input type="radio" name="experiencia" value="b"> Intermedio</label>
+        <label><input type="radio" name="experiencia" value="c"> Avanzado</label>
+      </div>
+    </div>
+
+    <!-- Tiempo de calentamiento -->
+    <div class="form-group">
+      <label class="form-label">Tiempo de calentamiento habitual</label>
+      <div class="radio-group">
+        <label><input type="radio" name="calentamiento" value="a" required> 0–5 min</label>
+        <label><input type="radio" name="calentamiento" value="b"> 6–10 min</label>
+        <label><input type="radio" name="calentamiento" value="c"> 11–20 min</label>
+        <label><input type="radio" name="calentamiento" value="d"> 21+ min</label>
+      </div>
+    </div>
+
+    <!-- Complicaciones médicas -->
+    <div class="form-group">
+      <label class="form-label">¿Tienes complicaciones médicas relacionadas con el ejercicio?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="complicaciones" value="si" required> Sí</label>
+        <label><input type="radio" name="complicaciones" value="no"> No</label>
+      </div>
+    </div>
+
+    <!-- Tipo de complicación -->
+    <div class="form-group">
+      <label class="form-label">Tipo de complicación (si aplica)</label>
+      <select name="tipoComplicacion" id="tipoComplicacion" class="form-input">
+        <option value="">Ninguna / No especificar</option>
+        <option value="Lesion muscoesqueletica">Lesiones musculoesqueléticas</option>
+        <option value="Fatiga extrema">Fatiga extrema</option>
+        <option value="Deshidratacion">Deshidratación</option>
+        <option value="Golpes de calor">Golpes de calor</option>
+        <option value="Complicaciones cardiovasculares">Complicaciones cardiovasculares</option>
+        <option value="Complicaciones neurologicas">Complicaciones neurológicas</option>
+        <option value="Complicacion respiratoria">Complicaciones respiratorias</option>
+        <option value="Discapacidades fisicas">Discapacidades físicas</option>
+      </select>
+    </div>
+
+    <!-- Tipo de discapacidad -->
+    <div class="form-group">
+      <label class="form-label">Tipo de discapacidad (si marcaste Discapacidades físicas)</label>
+      <select name="tipoDiscapacidad" id="tipoDiscapacidad" class="form-input">
+        <option value="">Ninguna</option>
+        <option value="Discapacidades fisicas - Discapacidad motriz">Discapacidad motriz</option>
+        <option value="Discapacidades fisicas - Discapacidad extremidades superiores">Discapacidad extremidades superiores</option>
+        <option value="Discapacidades fisicas - Discapacidad extremidades inferiores">Discapacidad extremidades inferiores</option>
+        <option value="Discapacidades fisicas - Discapacidad neuromotora">Discapacidad neuromotora</option>
+        <option value="Discapacidades fisicas - Discapacidad osteoarticular">Discapacidad osteoarticular</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-primary">Continuar</button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("encuestaForm");
+
+  form.addEventListener("submit", function (event) {
+    const complicaciones = document.querySelector("input[name='complicaciones']:checked");
+    const tipoComp = document.getElementById("tipoComplicacion").value;
+    const tipoDiscap = document.getElementById("tipoDiscapacidad").value;
+
+    if (complicaciones && complicaciones.value === "si" && tipoComp === "") {
+      alert("Por favor selecciona el tipo de complicación.");
+      event.preventDefault();
+      return;
+    }
+
+    if (tipoComp === "Discapacidades fisicas" && tipoDiscap === "") {
+      alert("Selecciona el tipo de discapacidad.");
+      event.preventDefault();
+      return;
+    }
+  });
+</script>
+
+{% endblock %}

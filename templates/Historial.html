@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Progreso{% endblock %}
+{% block menu_historial_active %}active{% endblock %}
+
+{% block content %}
+
+<h1>Historial de Progreso</h1>
+
+{% if historial and historial|length > 0 %}
+  <table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+      <th>Fecha</th>
+      <th>Deporte</th>
+      <th>Tipo de sesión</th>
+      <th>Rutina</th>
+      <th>Minutos</th>
+      <th>Peso (kg)</th>
+    </tr>
+    {% for s in historial %}
+    <tr>
+      <td>{{ s.fecha[:10] if s.fecha else "" }}</td>
+      <td>{{ s.deporte }}</td>
+      <td>{{ s.tipo_sesion }}</td>
+      <td>{{ s.rutina }}</td>
+      <td>{{ s.minutos }}</td>
+      <td>{{ s.peso if s.peso is not none else "-" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>No tienes sesiones registradas todavía. Completa una rutina y guárdala para ver tu progreso aquí.</p>
+{% endif %}
+
+<hr>
+
+<h2>Métricas (para el punto 20)</h2>
+
+<h3>Evolución de peso</h3>
+<canvas id="pesoChart"></canvas>
+
+<h3>Tiempo entrenado (minutos por día)</h3>
+<canvas id="tiempoChart"></canvas>
+
+<h3>Rutinas completadas</h3>
+<canvas id="rutinasChart"></canvas>
+
+<!-- Aquí luego metemos Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const fechasPeso = {{ fechas_peso|tojson }};
+  const pesos = {{ pesos|tojson }};
+
+  const fechasTiempo = {{ fechas_tiempo|tojson }};
+  const minutosDiarios = {{ minutos_diarios|tojson }};
+
+  const fechasRutinas = {{ fechas_rutinas|tojson }};
+  const rutinasDiarias = {{ rutinas_diarias|tojson }};
+
+  if (fechasPeso.length > 0) {
+    new Chart(document.getElementById('pesoChart'), {
+      type: 'line',
+      data: {
+        labels: fechasPeso,
+        datasets: [{
+          label: 'Peso (kg)',
+          data: pesos
+        }]
+      }
+    });
+  }
+
+  if (fechasTiempo.length > 0) {
+    new Chart(document.getElementById('tiempoChart'), {
+      type: 'bar',
+      data: {
+        labels: fechasTiempo,
+        datasets: [{
+          label: 'Minutos entrenados',
+          data: minutosDiarios
+        }]
+      }
+    });
+  }
+
+  if (fechasRutinas.length > 0) {
+    new Chart(document.getElementById('rutinasChart'), {
+      type: 'bar',
+      data: {
+        labels: fechasRutinas,
+        datasets: [{
+          label: 'Rutinas completadas',
+          data: rutinasDiarias
+        }]
+      }
+    });
+  }
+</script>
+
+{% endblock %}

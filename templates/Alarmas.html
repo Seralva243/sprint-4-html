@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block menu_alarmas_active %}active{% endblock %}
+
+{% block content %}
+
+<h2>Alarmas</h2>
+
+<div class="alarm-container">
+
+
+    <div class="new-alarm-box">
+        <label>Hora:</label>
+        <input type="time" id="alarmTime">
+
+        <button onclick="addAlarm()" class="menu-btn">
+            Agregar alarma
+        </button>
+    </div>
+
+    <h3>Mis alarmas</h3>
+    <ul id="alarmList" class="alarm-list"></ul>
+</div>
+
+
+<audio id="alarmSound">
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+</audio>
+
+<script>
+
+
+let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+
+
+function renderAlarms() {
+    const list = document.getElementById("alarmList");
+    list.innerHTML = "";
+
+    alarms.forEach((alarm, index) => {
+        const li = document.createElement("li");
+        li.className = "alarm-item";
+
+        li.innerHTML = `
+            <span>${alarm.time}</span>
+
+            <label class="switch">
+                <input type="checkbox" ${alarm.active ? "checked" : ""} onchange="toggleAlarm(${index})">
+                <span class="slider"></span>
+            </label>
+
+            <button class="delete-btn" onclick="deleteAlarm(${index})">Eliminar</button>
+        `;
+
+        list.appendChild(li);
+    });
+}
+
+function addAlarm() {
+    const time = document.getElementById("alarmTime").value;
+
+    if (!time) {
+        alert("Selecciona una hora.");
+        return;
+    }
+
+    alarms.push({ time: time, active: true });
+    localStorage.setItem("alarms", JSON.stringify(alarms));
+
+    renderAlarms();
+}
+
+function deleteAlarm(index) {
+    alarms.splice(index, 1);
+    localStorage.setItem("alarms", JSON.stringify(alarms));
+
+    renderAlarms();
+}
+
+function toggleAlarm(index) {
+    alarms[index].active = !alarms[index].active;
+    localStorage.setItem("alarms", JSON.stringify(alarms));
+
+    renderAlarms();
+}
+
+
+setInterval(() => {
+    const now = new Date();
+    let current = now.toTimeString().slice(0, 5); 
+
+    alarms.forEach(alarm => {
+        if (alarm.active && alarm.time === current) {
+            const sound = document.getElementById("alarmSound");
+            sound.currentTime = 0;
+            sound.play();
+        }
+    });
+
+}, 1000);
+
+renderAlarms();
+</script>
+
+<style>
+
+.alarm-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.new-alarm-box {
+    margin-bottom: 20px;
+}
+
+.alarm-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.alarm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 45px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+
+    background: #ccc;
+    border-radius: 34px;
+    transition: 0.3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+input:checked + .slider {
+    background: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.delete-btn {
+    background: #d9534f;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+</style>
+
+{% endblock %}

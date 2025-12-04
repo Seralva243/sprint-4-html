@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block title %}Rutinas{% endblock %}
+{% block menu_rutinas_active %}active{% endblock %}
+
+{% block content %}
+
+{% set tipo = request.args.get('tipo', 'Gimnasio') %}
+
+<h1>Rutinas para {{ deporte }} - Nivel {{ nivel }}</h1>
+
+<p><strong>Complicación registrada:</strong> {{ complicacion if complicacion else "Ninguna" }}</p>
+
+<form method="get" style="margin-bottom:20px;">
+    <button name="tipo" value="Gimnasio">Ver rutina de gimnasio</button>
+
+    {% if deporte == "Natacion" %}
+        <button name="tipo" value="Piscina">Ver rutina de piscina</button>
+    {% else %}
+        <button name="tipo" value="Aire">Ver rutina de aire libre</button>
+    {% endif %}
+</form>
+
+{% set filtradas = [] %}
+
+{% for r in rutinas %}
+    {% set t = r.tipo_sesion.lower() %}
+    {% if tipo == "Gimnasio" and "gimnasio" in t %}
+        {% set _ = filtradas.append(r) %}
+    {% elif tipo == "Piscina" and "piscina" in t %}
+        {% set _ = filtradas.append(r) %}
+    {% elif tipo == "Aire" and "gimnasio" not in t and "piscina" not in t %}
+        {% set _ = filtradas.append(r) %}
+    {% endif %}
+{% endfor %}
+
+<h2>
+    {% if tipo == "Gimnasio" %}
+        Rutinas de Gimnasio
+    {% elif tipo == "Piscina" %}
+        Rutinas de Piscina
+    {% else %}
+        Rutinas de Aire libre / Campo
+    {% endif %}
+</h2>
+
+{% if filtradas|length == 0 %}
+    <p>No hay rutinas de {{ tipo }} para este deporte/nivel.</p>
+{% else %}
+
+    {% for r in filtradas %}
+        {% set idx = loop.index0 %}
+
+        <form method="post">
+
+            <input type="hidden" name="deporte" value="{{ deporte }}">
+            <input type="hidden" name="tipo_sesion" value="{{ r.tipo_sesion }}">
+            <input type="hidden" name="titulo" value="{{ r.titulo }}">
+            <input type="hidden" name="duracion" value="{{ r.duracion }}">
+
+            <div class="rutina-box" style="margin-bottom: 30px;">
+
+                <h3>{{ r.titulo }}</h3>
+
+                {% if r.imagen %}
+                    <img src="{{ url_for('static', filename='img/ejercicios/' ~ r.imagen) }}"
+                        alt="{{ r.titulo }}"
+                        class="rutina-img"
+                        style="max-width: 300px; display:block; margin: 10px 0;">
+                {% endif %}
+
+                <p><strong>Descripción:</strong> {{ r.descripcion }}</p>
+                <p><strong>Duración:</strong> {{ r.duracion }}</p>
+
+                <!-- PROGRESO ----------------------------- -->
+                <div class="progreso-barra">
+                    <div class="progreso-barra-inner" id="barra-progreso-{{ idx }}"></div>
+                </div>
+
+                <p><strong>Pasos:</strong></p>
+
+                <ul id="lista-pasos-{{ idx }}">
+                    {% for paso in r.pasos %}
+                    <li class="paso-item" id="paso-{{ idx }}-{{ loop.index0 }}" style="margin-bottom: 10px;">
+                        <strong>{{ paso.nombre }}</strong>
+                        {% if paso.detalle %}: {{ paso.detalle }}{% endif %}
+
+                        {% if paso.gif %}
+                        <br>
+                        <img src="{{ url_for('static', filename='img/ejercicios/' ~ paso.gif) }}"
+                            alt="{{ paso.nombre }}"
+                            style="max-width: 200px; margin-top: 5px;">
+                        {% endif %}
+                        <br>
+
+                        <button type="button" onclick="completarPaso('{{ idx }}', '{{ loop.index0 }}')" class="btn-paso">
+                            Marcar como completado
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div style="margin-top: 10px;">
+                    <label>Peso actual (opcional):</label>
+                    <input type="number" name="peso" min="1" max="400" step="1" />
+                </div>
+
+                <button type="submit" style="margin-top: 10px;">
+                    Finalizar esta rutina y guardar progreso
+                </button>
+
+            </div>
+        </form>
+    {% endfor %}
+
+{% endif %}
+
+<a href="{{ url_for('encuesta') }}">Volver a la encuesta</a>
+
+<style>
+#chat-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #4CAF50;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    color: white;
+    font-size: 28px;
+    border: none;
+    cursor: pointer;
+    z-index: 999;
+}
+
+#cronometro-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 90px;
+    background: #2196F3;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    color: white;
+    font-size: 22px;
+    border: none;
+    cursor: pointer;
+    z-index: 999;
+}
+
+#cronometro-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 90px;
+    width: 200px;
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    display: none;
+    z-index: 999;
+}
+
+#chat-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 320px;
+    padding: 15px;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #ccc;
+    display: none;
+    z-index: 999;
+}
+
+#chat-box {
+    width: 100%;
+    height: 200px;
+    border: 1px solid #aaa;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f8f8f8;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+</style>
+
+<button id="chat-btn" onclick="toggleChat()">💬</button>
+<button id="cronometro-btn" onclick="toggleCronometro()">⏱️</button>
+
+<div id="cronometro-panel">
+    <h4>Cronómetro</h4>
+    <div id="cronometro">00:00:00</div>
+    <button onclick="iniciarOPausar()">Iniciar / Pausar</button>
+    <button onclick="reiniciarCronometro()">Reiniciar</button>
+</div>
+
+<div id="chat-panel">
+    <h3>Chat bot SportPro</h3>
+    <div id="chat-box"></div>
+    <input id="msg" type="text" placeholder="Escribe tu mensaje..." style="width:100%;">
+    <button onclick="sendMessage()">Enviar</button>
+</div>
+
+
+<script>
+
+
+function toggleChat() {
+    const panel = document.getElementById("chat-panel");
+    panel.style.display = (panel.style.display === "none") ? "block" : "none";
+}
+
+
+function toggleCronometro() {
+    const panel = document.getElementById("cronometro-panel");
+    panel.style.display = (panel.style.display === "none") ? "block" : "none";
+}
+
+let tiempo = 0;
+let intervalo = null;
+
+function actualizarCronometro() {
+    const h = String(Math.floor(tiempo / 3600)).padStart(2, '0');
+    const m = String(Math.floor((tiempo % 3600) / 60)).padStart(2, '0');
+    const s = String(tiempo % 60).padStart(2, '0');
+    document.getElementById("cronometro").textContent = `${h}:${m}:${s}`;
+}
+
+function iniciarOPausar() {
+    if (intervalo === null) {
+        intervalo = setInterval(() => {
+            tiempo++;
+            actualizarCronometro();
+        }, 1000);
+    } else {
+        clearInterval(intervalo);
+        intervalo = null;
+    }
+}
+
+function reiniciarCronometro() {
+    tiempo = 0;
+    clearInterval(intervalo);
+    intervalo = null;
+    actualizarCronometro();
+}
+
+
+let monitoring = false;
+
+async function iniciarDeteccionAplauso() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const source = audioContext.createMediaStreamSource(stream);
+
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    source.connect(analyser);
+
+    monitoring = true;
+
+    function detectar() {
+        if (!monitoring) return;
+
+        analyser.getByteFrequencyData(dataArray);
+
+        let suma = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+            suma += dataArray[i] * dataArray[i];
+        }
+
+        let energia = Math.sqrt(suma / dataArray.length);
+
+        if (energia > 65 && intervalo === null) {
+            iniciarOPausar();
+            monitoring = false;
+            setTimeout(() => monitoring = true, 1200);
+        }
+
+        requestAnimationFrame(detectar);
+    }
+
+    detectar();
+}
+
+iniciarDeteccionAplauso();
+
+
+function completarPaso(idxRutina, idxPaso) {
+
+    const paso = document.getElementById(`paso-${idxRutina}-${idxPaso}`);
+    if (paso.classList.contains("paso-completado")) return;
+
+    paso.classList.add("paso-completado");
+
+    const lista = document.querySelectorAll(`#lista-pasos-${idxRutina} .paso-item`);
+    const completados = document.querySelectorAll(`#lista-pasos-${idxRutina} .paso-completado`);
+
+    let porcentaje = (completados.length / lista.length) * 100;
+
+    document.getElementById(`barra-progreso-${idxRutina}`).style.width = porcentaje + "%";
+}
+
+</script>
+
+{% endblock %}

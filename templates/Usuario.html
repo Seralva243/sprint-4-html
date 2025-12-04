@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil de usuario{% endblock %}
+{% block menu_usuario_active %}active{% endblock %}
+
+{% block content %}
+
+<h1>Perfil de usuario</h1>
+
+<div class="usuario-card">
+  <h2>{{ usuario.nombre }}</h2>
+
+  <p><strong>Género:</strong> {{ usuario.genero }}</p>
+  <p><strong>Deporte principal:</strong> {{ usuario.deporte }}</p>
+  <p><strong>Edad:</strong> {{ usuario.edad }}</p>
+  <p><strong>Nivel:</strong> {{ usuario.nivel }}</p>
+
+  <p><strong>Complicación médica registrada:</strong>
+    {{ usuario.complicacion if usuario.complicacion else "Ninguna" }}
+  </p>
+
+  <h3>Preferencias de entrenamiento</h3>
+  <p><strong>Frecuencia:</strong>
+    {% if usuario.frecuencia == "a" %}&lt; 1 vez/semana
+    {% elif usuario.frecuencia == "b" %}1–2 veces/semana
+    {% elif usuario.frecuencia == "c" %}3–4 veces/semana
+    {% elif usuario.frecuencia == "d" %}5+ veces/semana
+    {% else %}No especificada{% endif %}
+  </p>
+
+  <p><strong>Duración de las sesiones:</strong>
+    {% if usuario.duracion == "a" %}&lt; 20 min
+    {% elif usuario.duracion == "b" %}20–40 min
+    {% elif usuario.duracion == "c" %}40–60 min
+    {% elif usuario.duracion == "d" %}&gt; 60 min
+    {% else %}No especificada{% endif %}
+  </p>
+
+  <p><strong>Tiempo de calentamiento habitual:</strong>
+    {% if usuario.calentamiento == "a" %}0–5 min
+    {% elif usuario.calentamiento == "b" %}6–10 min
+    {% elif usuario.calentamiento == "c" %}11–20 min
+    {% elif usuario.calentamiento == "d" %}21+ min
+    {% else %}No especificado{% endif %}
+  </p>
+
+  <p><strong>Tipo de discapacidad:</strong>
+    {{ usuario.discapacidad if usuario.discapacidad else "Ninguna" }}
+  </p>
+</div>
+
+<a href="{{ url_for('encuesta') }}">Volver a la encuesta</a>
+
+{% endblock %}
