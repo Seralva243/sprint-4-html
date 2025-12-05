@@ -18,7 +18,7 @@ from models.firebase import (
     initialize_firebase,
     obtener_historial_usuario,
     guardar_sesion_rutina,
-    obtener_usuario_desde_firebase,   
+    obtener_usuario_desde_firebase,
 )
 
 app = Flask(__name__)
@@ -160,6 +160,9 @@ def alarmas():
     return render_template("Alarmas.html")
 
 
+# ------------------------------------------
+# FIX IMPORTANTE AQUÍ (API CHAT)
+# ------------------------------------------
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
     data = request.get_json()
@@ -168,37 +171,40 @@ def api_chat():
     if not user_msg:
         return {"reply": "No recibí ningún mensaje."}
 
-    LM_URL = "http://192.168.68.131:1234/v1/chat/completions"
+    # ENDPOINT CORRECTO PARA CHAT
+    LM_URL = "http://192.168.68.117:1234/v1/chat/completions"
 
     payload = {
-        "model": "qwen2.5-7b-instruct-1m",
+        "model": "qwen2.5-7b-instruct-1m",  # usa el nombre EXACTO del modelo cargado
         "messages": [
             {
                 "role": "system",
-                "content": """Actúa como un entrenador personal experto en ejercicio, rutinas, fuerza, movilidad, estiramientos, calentamientos y nutrición deportiva.
-Responde con mensajes cortos, directos y solo con lo esencial.
-
-Si la pregunta no es sobre ejercicio, deporte o entrenamiento, responde únicamente:
-"Solo puedo ayudarte con temas de ejercicio y entrenamiento."
-
-No uses emojis. Sé conciso y profesional."""
+                "content": (
+                    "Actúa como un entrenador personal experto en ejercicio, rutinas, fuerza, "
+                    "movilidad, estiramientos, calentamientos y nutrición deportiva. "
+                    "Responde con mensajes cortos y profesionales. "
+                    "Si la pregunta no es sobre ejercicio, responde: "
+                    "'Solo puedo ayudarte con temas de ejercicio y entrenamiento.'"
+                )
             },
-            {"role": "user", "content": user_msg}
+            {
+                "role": "user",
+                "content": user_msg
+            }
         ],
         "temperature": 0.4,
-        "max_tokens": 150
+        "max_tokens": 200
     }
 
     try:
-        response = requests.post(LM_URL, json=payload)
+        response = requests.post(LM_URL, json=payload, timeout=10)
         res = response.json()
 
         reply = res["choices"][0]["message"]["content"]
-        return {"reply": reply}
+        return {"reply": reply.strip()}
 
     except Exception as e:
         return {"reply": f"Error al conectar con LM Studio: {e}"}
-
 
 if __name__ == "__main__":
     app.run(debug=True)
