@@ -71,7 +71,7 @@
                 <p><strong>Descripción:</strong> {{ r.descripcion }}</p>
                 <p><strong>Duración:</strong> {{ r.duracion }}</p>
 
-                <!-- PROGRESO ----------------------------- -->
+                <!-- PROGRESO -->
                 <div class="progreso-barra">
                     <div class="progreso-barra-inner" id="barra-progreso-{{ idx }}"></div>
                 </div>
@@ -202,15 +202,12 @@
     <button onclick="sendMessage()">Enviar</button>
 </div>
 
-
 <script>
-
 
 function toggleChat() {
     const panel = document.getElementById("chat-panel");
     panel.style.display = (panel.style.display === "none") ? "block" : "none";
 }
-
 
 function toggleCronometro() {
     const panel = document.getElementById("cronometro-panel");
@@ -246,7 +243,6 @@ function reiniciarCronometro() {
     actualizarCronometro();
 }
 
-
 let monitoring = false;
 
 async function iniciarDeteccionAplauso() {
@@ -257,7 +253,7 @@ async function iniciarDeteccionAplauso() {
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 512;
 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const dataArray = new Uint8Array(analyser.frequency.frequencyBinCount);
     source.connect(analyser);
 
     monitoring = true;
@@ -288,9 +284,7 @@ async function iniciarDeteccionAplauso() {
 
 iniciarDeteccionAplauso();
 
-
 function completarPaso(idxRutina, idxPaso) {
-
     const paso = document.getElementById(`paso-${idxRutina}-${idxPaso}`);
     if (paso.classList.contains("paso-completado")) return;
 
@@ -302,6 +296,62 @@ function completarPaso(idxRutina, idxPaso) {
     let porcentaje = (completados.length / lista.length) * 100;
 
     document.getElementById(`barra-progreso-${idxRutina}`).style.width = porcentaje + "%";
+}
+
+
+/* --------------------------
+   CHAT: LISTO PARA LM STUDIO
+--------------------------- */
+
+async function sendMessage() {
+    const msgInput = document.getElementById("msg");
+    const chatBox = document.getElementById("chat-box");
+
+    const texto = msgInput.value.trim();
+    if (texto === "") return;
+
+    // Muestra tu mensaje
+    chatBox.innerHTML += `
+        <div style="margin-bottom:5px;">
+            <strong>Tú:</strong> ${texto}
+        </div>
+    `;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    msgInput.value = "";
+
+    try {
+        const response = await fetch("http://192.168.68.117:1234/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "qwen2.5-7b-instruct-1m",  /* <-- Cambia esto por el modelo que uses */
+                messages: [
+                    { role: "user", content: texto }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        const botReply = data.choices?.[0]?.message?.content || "Sin respuesta del modelo.";
+
+        chatBox.innerHTML += `
+            <div style="margin-bottom:5px; color:#0a7;">
+                <strong>Bot:</strong> ${botReply}
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+        chatBox.innerHTML += `
+            <div style="margin-bottom:5px; color:red;">
+                <strong>Error:</strong> No se pudo conectar a LM Studio.
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 }
 
 </script>
